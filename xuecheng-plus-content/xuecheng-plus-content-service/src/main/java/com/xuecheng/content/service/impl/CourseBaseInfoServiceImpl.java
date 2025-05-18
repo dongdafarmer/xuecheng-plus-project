@@ -10,6 +10,7 @@ import com.xuecheng.content.mapper.CourseCategoryMapper;
 import com.xuecheng.content.mapper.CourseMarketMapper;
 import com.xuecheng.content.model.dto.AddCourseDto;
 import com.xuecheng.content.model.dto.CourseBaseInfoDto;
+import com.xuecheng.content.model.dto.EditCourseDto;
 import com.xuecheng.content.model.dto.QueryCourseParamsDto;
 import com.xuecheng.content.model.po.CourseBase;
 import com.xuecheng.content.model.po.CourseMarket;
@@ -64,36 +65,7 @@ public class CourseBaseInfoServiceImpl implements CourseBaseInfoService {
     @Transactional
     @Override
     public CourseBaseInfoDto createCourseBase(Long companyId, AddCourseDto dto) {
-        //参数校验
-        if (StringUtils.isBlank(dto.getName())) {
-//            throw new RuntimeException("课程名称为空");
-//            XueChengPlusException.cast("课程名称为空");
-            throw new XueChengPlusException("课程名称为空");
-        }
 
-        if (StringUtils.isBlank(dto.getMt())) {
-            throw new RuntimeException("课程分类为空");
-        }
-
-        if (StringUtils.isBlank(dto.getSt())) {
-            throw new RuntimeException("课程分类为空");
-        }
-
-        if (StringUtils.isBlank(dto.getGrade())) {
-            throw new RuntimeException("课程等级为空");
-        }
-
-        if (StringUtils.isBlank(dto.getTeachmode())) {
-            throw new RuntimeException("教育模式为空");
-        }
-
-        if (StringUtils.isBlank(dto.getUsers())) {
-            throw new RuntimeException("适应人群为空");
-        }
-
-        if (StringUtils.isBlank(dto.getCharge())) {
-            throw new RuntimeException("收费规则为空");
-        }
         //向课程基本信息表course_base中插入数据
         CourseBase newCourseBase = new CourseBase();
         BeanUtils.copyProperties(dto, newCourseBase);   //只要属性名称一致就可以拷
@@ -136,6 +108,40 @@ public class CourseBaseInfoServiceImpl implements CourseBaseInfoService {
         courseBaseInfoDto.setMtName(courseCategoryMapper.selectById(courseBase.getMt()).getName());
         courseBaseInfoDto.setStName(courseCategoryMapper.selectById(courseBase.getSt()).getName());
         return courseBaseInfoDto;
+    }
+
+    @Override
+    public CourseBaseInfoDto updateCourseBase(Long companyId, EditCourseDto editCourseDto) {
+        //数据合法性校验
+        //修改前先查询
+        CourseBase courseBase = courseBaseMapper.selectById(editCourseDto.getId());
+        CourseMarket courseMarket = courseMarketMapper.selectById(editCourseDto.getId());
+        if(courseBase == null) {
+            throw new XueChengPlusException("课程不存在");
+        }
+        //本机构只能修改本机构的课程
+        if(!companyId.equals(courseBase.getCompanyId())) {
+            throw new XueChengPlusException("本机构只能修改本机构的课程");
+        }
+
+        //封装数据
+        BeanUtils.copyProperties(editCourseDto, courseBase);
+        BeanUtils.copyProperties(editCourseDto, courseMarket);
+        courseBase.setChangeDate(LocalDateTime.now());
+
+        //更新课程基本信息
+        int i = courseBaseMapper.updateById(courseBase);
+        if(i <= 0) {
+            throw new XueChengPlusException("修改课程基本信息失败");
+        }
+        //更新课程营销信息
+        i = courseMarketMapper.updateById(courseMarket);
+        if(i <= 0) {
+            throw new XueChengPlusException("修改课程营销信息失败");
+        }
+        //查询课程信息
+        return getCourseBaseInfo(courseBase.getId());
+
     }
 
     //单独写一个方法保存营销信息，逻辑：先查询是否存在，如果存在则更新，不存在则插入

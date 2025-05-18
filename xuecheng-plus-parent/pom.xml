@@ -227,7 +227,7 @@
                 </configuration>
             </plugin>
 
-            <!--责处理项目资源文件并拷贝到输出目录，如果有额外的资源文件目录则需要配置-->
+            <!--负责处理项目资源文件并拷贝到输出目录，如果有额外的资源文件目录则需要配置-->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
