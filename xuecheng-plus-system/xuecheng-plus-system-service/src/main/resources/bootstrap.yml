@@ -1,10 +1,10 @@
 spring:
   application:
-    name: content-service  #微服务名称
+    name: system-service
   cloud:
     nacos:
       server-addr: 192.168.101.65:8848
-      config:     #配置文件相关信息
+      config:
         namespace: dev001
         group: xuecheng-plus-project
         file-extension: yaml

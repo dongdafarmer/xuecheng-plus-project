@@ -1,10 +1,14 @@
+#微服务配置
 spring:
   application:
-    name: content-service  #微服务名称
+    name: gateway
   cloud:
     nacos:
       server-addr: 192.168.101.65:8848
-      config:     #配置文件相关信息
+      discovery:
+        namespace: dev001
+        group: xuecheng-plus-project
+      config:
         namespace: dev001
         group: xuecheng-plus-project
         file-extension: yaml
@@ -14,5 +18,4 @@ spring:
             group: xuecheng-plus-common
             refresh: true
   profiles:
-    active: dev #环境名
-
+    active: dev

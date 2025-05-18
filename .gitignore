@@ -2,3 +2,5 @@
 /logs/
 /xuecheng-plus-content/xuecheng-plus-content-model/target/
 /xuecheng-plus-content/xuecheng-plus-content-api/target/
+/xuecheng-plus-content/xuecheng-plus-content-service/logs/
+/xuecheng-plus-gateway/target/
