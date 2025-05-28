@@ -9,10 +9,12 @@ import com.xuecheng.base.model.PageParams;
 import com.xuecheng.base.model.PageResult;
 import com.xuecheng.base.model.RestResponse;
 import com.xuecheng.media.mapper.MediaFilesMapper;
+import com.xuecheng.media.mapper.MediaProcessMapper;
 import com.xuecheng.media.model.dto.QueryMediaParamsDto;
 import com.xuecheng.media.model.dto.UploadFileParamsDto;
 import com.xuecheng.media.model.dto.UploadFileResultDto;
 import com.xuecheng.media.model.po.MediaFiles;
+import com.xuecheng.media.model.po.MediaProcess;
 import com.xuecheng.media.service.MediaFileService;
 import io.minio.*;
 import io.minio.messages.DeleteError;
@@ -47,6 +49,9 @@ public class MediaFileServiceImpl implements MediaFileService {
 
     @Autowired
     MediaFilesMapper mediaFilesMapper;
+
+    @Autowired
+    MediaProcessMapper mediaProcessMapper;
 
     @Autowired
     MinioClient minioClient;
@@ -221,6 +226,32 @@ public class MediaFileServiceImpl implements MediaFileService {
 
         }
         return mediaFiles;
+
+    }
+
+    /**
+     * 添加待处理任务
+     * @param mediaFiles 媒资文件信息
+     */
+    private void addWaitingTask(MediaFiles mediaFiles){
+
+        //文件名称
+        String filename = mediaFiles.getFilename();
+        //文件扩展名
+        String extension = filename.substring(filename.lastIndexOf("."));
+        //获取文件的 mimeType
+        String mimeType = getMimeType(extension);
+        if(mimeType.equals("video/x-msvideo")){//如果是avi视频写入待处理任务
+            MediaProcess mediaProcess = new MediaProcess();
+            BeanUtils.copyProperties(mediaFiles,mediaProcess);
+            //状态是未处理
+            mediaProcess.setStatus("1");
+            mediaProcess.setCreateDate(LocalDateTime.now());
+            mediaProcess.setFailCount(0);//失败次数默认0
+            mediaProcess.setUrl(null);
+            mediaProcessMapper.insert(mediaProcess);
+
+        }
 
     }
 
