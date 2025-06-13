@@ -1,0 +1,44 @@
+docker pull elasticsearch:7.12.1
+
+mkdir -p /home/cyh/elasticsearch/data /home/cyh/elasticsearch/config /home/cyh/elasticsearch/plugins
+chmod -R 777 /home/cyh/elasticsearch/
+
+docker network create es-net
+
+docker run -d \
+--restart=always \
+--name elasticsearch \
+--network es-net \
+-p 9200:9200 \
+-p 9300:9300 \
+--privileged \
+-v /home/cyh/elasticsearch/data:/usr/share/elasticsearch/data \
+-v /home/cyh/elasticsearch/plugins:/usr/share/elasticsearch/plugins \
+-e "discovery.type=single-node" \
+-e "ES_JAVA_OPTS=-Xms512m -Xmx512m" \
+elasticsearch:7.12.1
+
+# 进入容器
+docker exec -it es /bin/bash
+cd config
+# 关闭密码验证
+echo 'xpack.security.enabled: false' >> elasticsearch.yml
+docker restart elasticsearch
+
+# 安装kibana
+docker pull kibana:7.12.1
+mkdir -p /home/cyh/kibana/config /home/cyh/kibana/data\
+chmod 777 /home/cyh/kibana/data
+chmod 777 /home/cyh/kibana/config
+
+docker run -d \
+--restart=always \
+--name kibana \
+--network es-net \
+-p 5601:5601 \
+-e ELASTICSEARCH_HOSTS=http://elasticsearch:9200 \
+kibana:7.12.1
+
+# 安装IK分词器
+docker exec -it elasticsearch /bin/bash
+./bin/elasticsearch-plugin install https://release.infinilabs.com/analysis-ik/stable/elasticsearch-analysis-ik-7.12.1.zip
