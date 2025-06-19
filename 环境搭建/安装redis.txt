@@ -1,0 +1,20 @@
+docker pull redis:8.0.2
+
+mkdir -p /home/cyh/redis/data
+mkdir -p /home/cyh/redis/conf
+
+vim /home/cyh/redis/conf/redis.conf
+requirepass redis
+appendonly yes
+
+docker run -d \
+--name redis \
+-p 6379:6379 \
+--restart unless-stopped \
+-v /home/cyh/redis/data:/data \
+-v /home/cyh/redis/conf/redis.conf:/etc/redis/redis.conf \
+redis:8.0.2 \
+redis-server \
+--requirepass redis \
+--appendonly yes
+
